@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --background: #060a12;
+  --foreground: #e6f0ff;
+  --hud-surface: rgba(10, 17, 30, 0.78);
+  --hud-surface-strong: rgba(8, 13, 24, 0.92);
+  --hud-border: rgba(56, 189, 248, 0.24);
+  --hud-border-bright: rgba(0, 240, 255, 0.55);
+  --accent-cyan: #00f0ff;
+  --accent-sky: #38bdf8;
+  --accent-emerald: #10b981;
+  --accent-amber: #f59e0b;
+  --text-muted: #8aa0bf;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-hud-surface: var(--hud-surface);
+  --color-hud-border: var(--hud-border);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-emerald: var(--accent-emerald);
+  --color-accent-amber: var(--accent-amber);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Game-Engine Viewport Utilities */
+.engine-grid-bg {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(0, 240, 255, 0.08), transparent 55%),
+    linear-gradient(to right, rgba(56, 189, 248, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.05) 1px, transparent 1px);
+  background-size: 100% 100%, 36px 36px, 36px 36px;
+}
+
+.hud-panel {
+  background: var(--hud-surface);
+  border: 1px solid var(--hud-border);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 12px 36px -8px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.hud-panel-strong {
+  background: var(--hud-surface-strong);
+  border: 1px solid var(--hud-border);
+  backdrop-filter: blur(18px);
+  box-shadow:
+    0 20px 50px -12px rgba(0, 0, 0, 0.78),
+    inset 0 1px 0 rgba(0, 240, 255, 0.08);
+}
+
+.hud-scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce {
+    animation: none !important;
+  }
+}
