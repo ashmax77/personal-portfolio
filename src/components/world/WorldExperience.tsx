@@ -35,6 +35,7 @@ export default function WorldExperience() {
   const [selectedId, setSelectedId] = useState<LocationId | null>(null);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>("night");
+  const [ecoMode, setEcoMode] = useState(false);
 
   const handleReady = useCallback(() => setWorldReady(true), []);
   const handleError = useCallback(() => setWorldError(true), []);
@@ -45,6 +46,7 @@ export default function WorldExperience() {
     () => setTimeOfDay((prev) => (prev === "night" ? "day" : "night")),
     []
   );
+  const handleToggleEcoMode = useCallback(() => setEcoMode((prev) => !prev), []);
   const handleResetCamera = useCallback(() => {
     setSelectedId(null);
     setResetTrigger((n) => n + 1);
@@ -63,6 +65,7 @@ export default function WorldExperience() {
               selectedId={selectedId}
               resetTrigger={resetTrigger}
               timeOfDay={timeOfDay}
+              ecoMode={ecoMode}
               onSelect={setSelectedId}
               onReady={handleReady}
             />
@@ -75,7 +78,9 @@ export default function WorldExperience() {
           <WorldHUD
             selectedId={selectedId}
             timeOfDay={timeOfDay}
+            ecoMode={ecoMode}
             onToggleTimeOfDay={handleToggleTimeOfDay}
+            onToggleEcoMode={handleToggleEcoMode}
             onSelect={setSelectedId}
             onResetCamera={handleResetCamera}
             onClassicView={handleClassic}

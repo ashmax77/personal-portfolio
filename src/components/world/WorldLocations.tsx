@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import type { ThreeEvent } from "@react-three/fiber";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useFrame, type ThreeEvent } from "@react-three/fiber";
+import type * as THREE from "three";
 import type { LocationId, WorldDestination } from "@/types/portfolio";
 import { destinations } from "@/lib/destinations";
 import LandmarkLabel from "./LandmarkLabel";
@@ -85,7 +86,23 @@ function InteractiveLandmark({
   );
 }
 
-function DeveloperHQMesh({ active, accent }: { active: boolean; accent: string }) {
+function DeveloperHQMesh({
+  active,
+  accent,
+  animate,
+}: {
+  active: boolean;
+  accent: string;
+  animate: boolean;
+}) {
+  const beaconRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (!animate || !beaconRef.current) return;
+    const pulse = 1 + Math.sin(clock.getElapsedTime() * 3.2) * 0.18;
+    beaconRef.current.scale.setScalar(pulse);
+  });
+
   return (
     <>
       <mesh position={[0, 0.2, 0]}>
@@ -118,7 +135,7 @@ function DeveloperHQMesh({ active, accent }: { active: boolean; accent: string }
         <cylinderGeometry args={[0.05, 0.08, 1, 6]} />
         <meshStandardMaterial color="#94A3B8" />
       </mesh>
-      <mesh position={[0, 4.55, 0]}>
+      <mesh ref={beaconRef} position={[0, 4.55, 0]}>
         <sphereGeometry args={[0.14, 8, 8]} />
         <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.2} />
       </mesh>
@@ -126,7 +143,23 @@ function DeveloperHQMesh({ active, accent }: { active: boolean; accent: string }
   );
 }
 
-function ProjectLabMesh({ active, accent }: { active: boolean; accent: string }) {
+function ProjectLabMesh({
+  active,
+  accent,
+  animate,
+}: {
+  active: boolean;
+  accent: string;
+  animate: boolean;
+}) {
+  const ringRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }, delta) => {
+    if (!animate || !ringRef.current) return;
+    ringRef.current.rotation.z += Math.min(delta, 0.05) * 0.9;
+    ringRef.current.position.y = 1.7 + Math.sin(clock.getElapsedTime() * 2) * 0.08;
+  });
+
   return (
     <>
       <mesh position={[0, 0.2, 0]}>
@@ -155,6 +188,10 @@ function ProjectLabMesh({ active, accent }: { active: boolean; accent: string })
           flatShading
         />
       </mesh>
+      <mesh ref={ringRef} position={[0.9, 1.7, 0]} rotation={[Math.PI / 2.4, 0.3, 0]}>
+        <torusGeometry args={[0.82, 0.045, 6, 20]} />
+        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.9} />
+      </mesh>
       <mesh position={[-0.45, 2.3, 0]}>
         <boxGeometry args={[1.4, 0.4, 1.4]} />
         <meshStandardMaterial color={TRIM_COLOR} flatShading />
@@ -163,7 +200,23 @@ function ProjectLabMesh({ active, accent }: { active: boolean; accent: string })
   );
 }
 
-function TechnologyCenterMesh({ active, accent }: { active: boolean; accent: string }) {
+function TechnologyCenterMesh({
+  active,
+  accent,
+  animate,
+}: {
+  active: boolean;
+  accent: string;
+  animate: boolean;
+}) {
+  const coreRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }, delta) => {
+    if (!animate || !coreRef.current) return;
+    coreRef.current.rotation.y += Math.min(delta, 0.05) * 0.85;
+    coreRef.current.position.y = 3.25 + Math.sin(clock.getElapsedTime() * 2.2) * 0.14;
+  });
+
   return (
     <>
       <mesh position={[0, 0.2, 0]}>
@@ -189,7 +242,7 @@ function TechnologyCenterMesh({ active, accent }: { active: boolean; accent: str
           />
         </mesh>
       ))}
-      <mesh position={[0, 3.25, 0]}>
+      <mesh ref={coreRef} position={[0, 3.25, 0]}>
         <octahedronGeometry args={[0.55, 0]} />
         <meshStandardMaterial
           color={accent}
@@ -218,7 +271,6 @@ function AcademyMesh({ active, accent }: { active: boolean; accent: string }) {
           flatShading
         />
       </mesh>
-      {/* Campus roof */}
       <mesh position={[0, 2.35, 0]} rotation={[0, Math.PI / 4, 0]}>
         <coneGeometry args={[2.1, 1.0, 4]} />
         <meshStandardMaterial color={SLATE_LIGHT} flatShading />
@@ -235,7 +287,23 @@ function AcademyMesh({ active, accent }: { active: boolean; accent: string }) {
   );
 }
 
-function AchievementHallMesh({ active, accent }: { active: boolean; accent: string }) {
+function AchievementHallMesh({
+  active,
+  accent,
+  animate,
+}: {
+  active: boolean;
+  accent: string;
+  animate: boolean;
+}) {
+  const trophyRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }, delta) => {
+    if (!animate || !trophyRef.current) return;
+    trophyRef.current.rotation.y += Math.min(delta, 0.05) * 1.1;
+    trophyRef.current.position.y = 3.15 + Math.sin(clock.getElapsedTime() * 2.4) * 0.12;
+  });
+
   return (
     <>
       <mesh position={[0, 0.2, 0]}>
@@ -255,7 +323,7 @@ function AchievementHallMesh({ active, accent }: { active: boolean; accent: stri
         <sphereGeometry args={[1.15, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2]} />
         <meshStandardMaterial color={SLATE_LIGHT} flatShading />
       </mesh>
-      <mesh position={[0, 3.15, 0]}>
+      <mesh ref={trophyRef} position={[0, 3.15, 0]}>
         <octahedronGeometry args={[0.42, 0]} />
         <meshStandardMaterial
           color={accent}
@@ -268,7 +336,29 @@ function AchievementHallMesh({ active, accent }: { active: boolean; accent: stri
   );
 }
 
-function CommunicationHubMesh({ active, accent }: { active: boolean; accent: string }) {
+function CommunicationHubMesh({
+  active,
+  accent,
+  animate,
+}: {
+  active: boolean;
+  accent: string;
+  animate: boolean;
+}) {
+  const dishRef = useRef<THREE.Mesh>(null);
+  const pulseRef = useRef<THREE.Mesh>(null);
+
+  useFrame(({ clock }) => {
+    if (!animate) return;
+    const t = clock.getElapsedTime();
+    if (dishRef.current) {
+      dishRef.current.rotation.y = 0.3 + Math.sin(t * 0.9) * 0.45;
+    }
+    if (pulseRef.current) {
+      pulseRef.current.scale.setScalar(1 + Math.sin(t * 4) * 0.2);
+    }
+  });
+
   return (
     <>
       <mesh position={[0, 0.2, 0]}>
@@ -284,13 +374,11 @@ function CommunicationHubMesh({ active, accent }: { active: boolean; accent: str
           flatShading
         />
       </mesh>
-      {/* Comms mast */}
       <mesh position={[0.3, 2.9, 0]}>
         <cylinderGeometry args={[0.08, 0.14, 1.8, 6]} />
         <meshStandardMaterial color="#94A3B8" />
       </mesh>
-      {/* Dish */}
-      <mesh position={[-0.35, 2.55, 0.2]} rotation={[0.6, 0.3, 0.5]}>
+      <mesh ref={dishRef} position={[-0.35, 2.55, 0.2]} rotation={[0.6, 0.3, 0.5]}>
         <coneGeometry args={[0.65, 0.35, 10, 1, true]} />
         <meshStandardMaterial
           color={accent}
@@ -300,7 +388,7 @@ function CommunicationHubMesh({ active, accent }: { active: boolean; accent: str
           flatShading
         />
       </mesh>
-      <mesh position={[0.3, 3.9, 0]}>
+      <mesh ref={pulseRef} position={[0.3, 3.9, 0]}>
         <sphereGeometry args={[0.16, 8, 8]} />
         <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={1.2} />
       </mesh>
@@ -310,19 +398,28 @@ function CommunicationHubMesh({ active, accent }: { active: boolean; accent: str
 
 const LANDMARK_RENDERERS: Record<
   LocationId,
-  { labelHeight: number; render: (active: boolean, accent: string) => ReactNode }
+  {
+    labelHeight: number;
+    render: (active: boolean, accent: string, animate: boolean) => ReactNode;
+  }
 > = {
   "developer-hq": {
     labelHeight: 5.2,
-    render: (active, accent) => <DeveloperHQMesh active={active} accent={accent} />,
+    render: (active, accent, animate) => (
+      <DeveloperHQMesh active={active} accent={accent} animate={animate} />
+    ),
   },
   "project-lab": {
     labelHeight: 3.4,
-    render: (active, accent) => <ProjectLabMesh active={active} accent={accent} />,
+    render: (active, accent, animate) => (
+      <ProjectLabMesh active={active} accent={accent} animate={animate} />
+    ),
   },
   "technology-center": {
     labelHeight: 4.4,
-    render: (active, accent) => <TechnologyCenterMesh active={active} accent={accent} />,
+    render: (active, accent, animate) => (
+      <TechnologyCenterMesh active={active} accent={accent} animate={animate} />
+    ),
   },
   academy: {
     labelHeight: 3.6,
@@ -330,19 +427,25 @@ const LANDMARK_RENDERERS: Record<
   },
   "achievement-hall": {
     labelHeight: 4.1,
-    render: (active, accent) => <AchievementHallMesh active={active} accent={accent} />,
+    render: (active, accent, animate) => (
+      <AchievementHallMesh active={active} accent={accent} animate={animate} />
+    ),
   },
   "communication-hub": {
     labelHeight: 4.5,
-    render: (active, accent) => <CommunicationHubMesh active={active} accent={accent} />,
+    render: (active, accent, animate) => (
+      <CommunicationHubMesh active={active} accent={accent} animate={animate} />
+    ),
   },
 };
 
 export default function WorldLocations({
   selectedId,
+  animate,
   onSelect,
 }: {
   selectedId: LocationId | null;
+  animate: boolean;
   onSelect: (id: LocationId) => void;
 }) {
   return (
@@ -357,7 +460,7 @@ export default function WorldLocations({
             labelHeight={config.labelHeight}
             onSelect={onSelect}
           >
-            {(active) => config.render(active, destination.accentColor)}
+            {(active) => config.render(active, destination.accentColor, animate)}
           </InteractiveLandmark>
         );
       })}

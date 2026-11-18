@@ -1,7 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { CodeXml, Compass, ExternalLink, LayoutList, Moon, MousePointerClick, RotateCcw, Sun } from "lucide-react";
+import {
+  CodeXml,
+  Compass,
+  ExternalLink,
+  LayoutList,
+  Leaf,
+  Moon,
+  MousePointerClick,
+  RotateCcw,
+  Sun,
+  Zap,
+} from "lucide-react";
 import { profile } from "@/content/profile";
 import type { LocationId } from "@/types/portfolio";
 import type { TimeOfDay } from "@/components/world/WorldAtmosphere";
@@ -10,7 +21,9 @@ import WorldNavigation from "./WorldNavigation";
 type WorldHUDProps = {
   selectedId: LocationId | null;
   timeOfDay: TimeOfDay;
+  ecoMode: boolean;
   onToggleTimeOfDay: () => void;
+  onToggleEcoMode: () => void;
   onSelect: (id: LocationId) => void;
   onResetCamera: () => void;
   onClassicView: () => void;
@@ -19,7 +32,9 @@ type WorldHUDProps = {
 export default function WorldHUD({
   selectedId,
   timeOfDay,
+  ecoMode,
   onToggleTimeOfDay,
+  onToggleEcoMode,
   onSelect,
   onResetCamera,
   onClassicView,
@@ -39,6 +54,25 @@ export default function WorldHUD({
         </div>
 
         <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onToggleEcoMode}
+            aria-pressed={ecoMode}
+            title={
+              ecoMode
+                ? "Eco Mode active (demand rendering) — switch to Live"
+                : "Live animations active — switch to Eco Mode"
+            }
+            className="hud-panel inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-slate-200 transition-colors hover:text-cyan-200 focus-visible:outline focus-visible:outline-cyan-400 sm:text-sm"
+          >
+            {ecoMode ? (
+              <Leaf className="h-4 w-4 text-emerald-300" aria-hidden="true" />
+            ) : (
+              <Zap className="h-4 w-4 text-cyan-300" aria-hidden="true" />
+            )}
+            <span className="hidden sm:inline">{ecoMode ? "Eco" : "Live"}</span>
+          </button>
+
           <button
             type="button"
             onClick={onToggleTimeOfDay}

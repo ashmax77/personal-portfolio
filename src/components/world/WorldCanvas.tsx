@@ -17,6 +17,7 @@ type WorldCanvasProps = {
   selectedId: LocationId | null;
   resetTrigger: number;
   timeOfDay: TimeOfDay;
+  ecoMode: boolean;
   onSelect: (id: LocationId) => void;
   onReady: () => void;
 };
@@ -105,9 +106,11 @@ function Rock({ position }: { position: [number, number, number] }) {
 
 function ProceduralCampus({
   selectedId,
+  animate,
   onSelect,
 }: {
   selectedId: LocationId | null;
+  animate: boolean;
   onSelect: (id: LocationId) => void;
 }) {
   return (
@@ -119,7 +122,7 @@ function ProceduralCampus({
       {ROCKS.map((position) => (
         <Rock key={position.join(",")} position={position} />
       ))}
-      <WorldLocations selectedId={selectedId} onSelect={onSelect} />
+      <WorldLocations selectedId={selectedId} animate={animate} onSelect={onSelect} />
     </>
   );
 }
@@ -128,6 +131,7 @@ export default function WorldCanvas({
   selectedId,
   resetTrigger,
   timeOfDay,
+  ecoMode,
   onSelect,
   onReady,
 }: WorldCanvasProps) {
@@ -135,6 +139,7 @@ export default function WorldCanvas({
   const [hasCustomModel, setHasCustomModel] = useState(false);
   const cleanupContextListeners = useRef<(() => void) | null>(null);
 
+  const shouldAnimate = !prefersReducedMotion && !ecoMode;
   const isNight = timeOfDay === "night";
   const skyColor = isNight ? "#060A12" : "#0F2942";
 
@@ -163,7 +168,7 @@ export default function WorldCanvas({
       className="touch-none"
       camera={{ position: OVERVIEW_CAMERA.position, fov: 40, near: 0.1, far: 200 }}
       dpr={[1, 1.5]}
-      frameloop={prefersReducedMotion ? "demand" : "always"}
+      frameloop={shouldAnimate ? "always" : "demand"}
       gl={{
         antialias: true,
         powerPreference: "high-performance",
@@ -203,17 +208,25 @@ export default function WorldCanvas({
         color={isNight ? "#E0F2FE" : "#FFFBEB"}
       />
 
-      <WorldAtmosphere timeOfDay={timeOfDay} animate={!prefersReducedMotion} />
+      <WorldAtmosphere timeOfDay={timeOfDay} animate={shouldAnimate} />
       <ContactShadows position={[0, 0.015, 0]} opacity={0.35} scale={34} blur={2} far={6} frames={1} />
 
       {hasCustomModel ? (
         <WorldErrorBoundary onError={() => setHasCustomModel(false)}>
-          <Suspense fallback={<ProceduralCampus selectedId={selectedId} onSelect={onSelect} />}>
+          <Suspense
+            fallback={
+              <ProceduralCampus
+                selectedId={selectedId}
+                animate={shouldAnimate}
+                onSelect={onSelect}
+              />
+            }
+          >
             <WorldModel onSelect={onSelect} />
           </Suspense>
         </WorldErrorBoundary>
       ) : (
-        <ProceduralCampus selectedId={selectedId} onSelect={onSelect} />
+        <ProceduralCampus selectedId={selectedId} animate={shouldAnimate} onSelect={onSelect} />
       )}
 
       <WorldCamera selectedId={selectedId} resetTrigger={resetTrigger} />

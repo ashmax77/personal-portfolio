@@ -172,6 +172,76 @@ function WalkwayLamps({ timeOfDay }: { timeOfDay: TimeOfDay }) {
   );
 }
 
+function DriftingClouds({ timeOfDay, animate }: WorldAtmosphereProps) {
+  const cloudsRef = useRef<THREE.Group>(null);
+  const cloudColor = timeOfDay === "night" ? "#1E293B" : "#F1F5F9";
+
+  useFrame((_, delta) => {
+    if (!animate || !cloudsRef.current) return;
+    const step = Math.min(delta, 0.05) * 0.45;
+    for (const child of cloudsRef.current.children) {
+      child.position.x += step;
+      if (child.position.x > 26) child.position.x = -26;
+    }
+  });
+
+  const clouds: Array<{ pos: [number, number, number]; scale: number }> = [
+    { pos: [-14, 11, -12], scale: 1.1 },
+    { pos: [4, 12.5, 10], scale: 0.9 },
+    { pos: [16, 10.5, -5], scale: 1.25 },
+  ];
+
+  return (
+    <group ref={cloudsRef}>
+      {clouds.map((cloud, index) => (
+        <group key={index} position={cloud.pos} scale={cloud.scale}>
+          <mesh position={[0, 0, 0]}>
+            <dodecahedronGeometry args={[1.1, 0]} />
+            <meshStandardMaterial color={cloudColor} flatShading transparent opacity={0.78} />
+          </mesh>
+          <mesh position={[1.05, -0.15, 0.2]}>
+            <dodecahedronGeometry args={[0.8, 0]} />
+            <meshStandardMaterial color={cloudColor} flatShading transparent opacity={0.78} />
+          </mesh>
+          <mesh position={[-1.0, -0.2, -0.15]}>
+            <dodecahedronGeometry args={[0.75, 0]} />
+            <meshStandardMaterial color={cloudColor} flatShading transparent opacity={0.78} />
+          </mesh>
+        </group>
+      ))}
+    </group>
+  );
+}
+
+function CampusDrone({ animate }: { animate: boolean }) {
+  const droneRef = useRef<THREE.Group>(null);
+
+  useFrame(({ clock }) => {
+    if (!animate || !droneRef.current) return;
+    const t = clock.getElapsedTime() * 0.42;
+    const radius = 5.4;
+    droneRef.current.position.set(
+      Math.cos(t) * radius,
+      3.8 + Math.sin(t * 2.5) * 0.28,
+      Math.sin(t) * radius
+    );
+    droneRef.current.rotation.y = -t;
+  });
+
+  return (
+    <group ref={droneRef} position={[5.4, 3.8, 0]}>
+      <mesh>
+        <octahedronGeometry args={[0.24, 0]} />
+        <meshStandardMaterial color="#334155" flatShading />
+      </mesh>
+      <mesh position={[0, -0.12, 0]}>
+        <sphereGeometry args={[0.1, 8, 8]} />
+        <meshStandardMaterial color="#10B981" emissive="#10B981" emissiveIntensity={1.6} />
+      </mesh>
+    </group>
+  );
+}
+
 export default function WorldAtmosphere({ timeOfDay, animate }: WorldAtmosphereProps) {
   return (
     <>
@@ -181,6 +251,8 @@ export default function WorldAtmosphere({ timeOfDay, animate }: WorldAtmosphereP
       <StylizedWater timeOfDay={timeOfDay} animate={animate} />
       <FloatingSpores timeOfDay={timeOfDay} animate={animate} />
       <WalkwayLamps timeOfDay={timeOfDay} />
+      <DriftingClouds timeOfDay={timeOfDay} animate={animate} />
+      <CampusDrone animate={animate} />
     </>
   );
 }
