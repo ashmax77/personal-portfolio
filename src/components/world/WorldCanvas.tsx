@@ -1,7 +1,8 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
+import { AdaptiveDpr, AdaptiveEvents } from "@react-three/drei";
 import { OVERVIEW_CAMERA, destinations } from "@/lib/destinations";
 import type { LocationId } from "@/types/portfolio";
 import WorldCamera from "./WorldCamera";
@@ -126,6 +127,13 @@ export default function WorldCanvas({
   onReady,
 }: WorldCanvasProps) {
   const [hasCustomModel, setHasCustomModel] = useState(false);
+  const cleanupContextListeners = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    return () => {
+      cleanupContextListeners.current?.();
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -148,10 +156,26 @@ export default function WorldCanvas({
       dpr={[1, 1.5]}
       frameloop="demand"
       gl={{ antialias: true, powerPreference: "high-performance" }}
-      onCreated={() => {
+      onCreated={({ gl, invalidate }) => {
+        const canvas = gl.domElement;
+        const handleLost = (event: Event) => {
+          event.preventDefault();
+        };
+        const handleRestored = () => {
+          invalidate();
+        };
+        canvas.addEventListener("webglcontextlost", handleLost);
+        canvas.addEventListener("webglcontextrestored", handleRestored);
+        cleanupContextListeners.current = () => {
+          canvas.removeEventListener("webglcontextlost", handleLost);
+          canvas.removeEventListener("webglcontextrestored", handleRestored);
+        };
+
         requestAnimationFrame(() => onReady());
       }}
     >
+      <AdaptiveDpr pixelated />
+      <AdaptiveEvents />
       <color attach="background" args={["#060A12"]} />
       <fog attach="fog" args={["#060A12", 34, 72]} />
 
