@@ -37,25 +37,17 @@ The finished application follows a three-stage experience while keeping all port
 
 ---
 
-## Development Progress (Up to Now)
+## Development Progress
 
-This project is being built incrementally in **7 verified phases**. Detailed per-feature tracking lives in [`PROGRESS.md`](./PROGRESS.md).
+All **7 implementation phases** are complete and verified. Detailed per-feature tracking lives in [`PROGRESS.md`](./PROGRESS.md).
 
-### Completed So Far — Phase 1: Project Scaffolding & Dependency Foundation
-- Scaffolded the Next.js App Router application at the repository root with TypeScript, ESLint, Tailwind CSS v4, `src/` directory, and `@/*` import alias.
-- Installed and verified compatible 3D and UI runtime packages (`three`, `@types/three`, `@react-three/fiber`, `@react-three/drei`, `motion`, `lucide-react`, `clsx`, `tailwind-merge`).
-- Created the modular directory architecture (`src/components/{onboarding,world,navigation,panels,projects,common}`, `src/content`, `src/hooks`, `src/lib`, `src/types`, `src/styles`, `public/{models,textures,images/projects,icons}`).
-- Defined shared TypeScript contracts in [`src/types/portfolio.ts`](./src/types/portfolio.ts) (`LocationId`, `ActiveSection`, `ViewMode`, `WorldDestination`, `ProfileData`, `Project`, `SkillCategory`, `EducationItem`, `ExperienceItem`, `AchievementItem`) and class-merging helper [`src/lib/cn.ts`](./src/lib/cn.ts).
-- Configured the **Dark Sci-Fi / Game-Engine Viewport** base theme (obsidian/slate translucent HUD surfaces, scanlines/grid background, cyan/emerald telemetry tokens) in [`src/app/globals.css`](./src/app/globals.css), [`src/app/layout.tsx`](./src/app/layout.tsx), and the Phase 1 foundation status view in [`src/app/page.tsx`](./src/app/page.tsx).
-- Verified `npm run lint` and `npm run build` pass cleanly.
-
-### Upcoming Phases
-- **Phase 2:** Vertical Slice PoC (`BootSequence.tsx` → lazy `WorldCanvas.tsx` with `Developer HQ` → `InformationPanel.tsx`)
-- **Phase 3:** Typed portfolio content (`src/content/*`), Classic View, and `/projects/[slug]` case studies
-- **Phase 4:** All 6 3D landmarks, demand-driven camera controller, and Game-Engine HUD
-- **Phase 5:** Blender `.glb` model loader (`WorldModel.tsx`) & `glTF-Transform` optimization scripts
-- **Phase 6:** Mobile touch ergonomics, `sitemap.ts`, `robots.ts`, Open Graph & JSON-LD SEO
-- **Phase 7:** Performance budget QA (`AdaptiveDpr`, WebGL context recovery) & Vercel production readiness
+- **Phase 1:** Next.js App Router, TypeScript, Tailwind CSS v4, R3F/Drei/Three.js/Motion dependencies, Dark Sci-Fi HUD theme
+- **Phase 2:** Terminal `BootSequence`, lazy-loaded `WorldCanvas`, WebGL fallback, and HTML `InformationPanel`
+- **Phase 3:** Typed portfolio data (`src/content/*`), `ClassicPortfolioView`, `/projects/[slug]` case studies, `/about`, `/experience`, `/contact`
+- **Phase 4:** All 6 3D campus destinations, demand-driven `WorldCamera`, persistent `WorldHUD` & `1`–`6` hotkey `WorldNavigation`, and all 6 HTML panels
+- **Phase 5:** `WorldModel` GLB loader with Blender collection binding + `@gltf-transform/cli` optimization scripts (`model:inspect`, `model:optimize`)
+- **Phase 6:** Mobile touch hitboxes, `touch-none` canvas, bottom-sheet panel ergonomics, `/sitemap.xml`, `/robots.txt`, Open Graph & JSON-LD `Person` metadata
+- **Phase 7:** `<AdaptiveDpr pixelated />`, `<AdaptiveEvents />`, WebGL context-loss recovery, and production build/route verification
 
 ---
 
