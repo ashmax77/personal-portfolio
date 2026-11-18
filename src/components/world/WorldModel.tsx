@@ -6,7 +6,8 @@ import type { ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import type { LocationId } from "@/types/portfolio";
 
-export const MODEL_URL = "/models/world.optimized.glb";
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+export const MODEL_URL = `${BASE_PATH}/models/world.optimized.glb`;
 
 const BLENDER_NAME_TO_LOCATION: Record<string, LocationId> = {
   DEVELOPER_HQ: "developer-hq",

@@ -2,6 +2,8 @@ import type { MetadataRoute } from "next";
 import { projects } from "@/content/projects";
 import { SITE_URL } from "@/lib/site";
 
+export const dynamic = "force-static";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = ["", "/about", "/projects", "/experience", "/contact"].map((route) => ({
     url: `${SITE_URL}${route}`,
