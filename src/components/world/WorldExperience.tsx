@@ -17,6 +17,12 @@ import ClassicPortfolioView from "@/components/common/ClassicPortfolioView";
 import WorldErrorBoundary from "@/components/world/WorldErrorBoundary";
 import { useWebGLSupport } from "@/hooks/useWebGLSupport";
 import { destinations } from "@/lib/destinations";
+import {
+  playDiscoveryComplete,
+  playPanelClose,
+  playSelectChime,
+  playTourStep,
+} from "@/lib/sound";
 import type { LocationId } from "@/types/portfolio";
 import type { TimeOfDay } from "@/components/world/WorldAtmosphere";
 
@@ -33,13 +39,49 @@ export default function WorldExperience() {
   const [worldReady, setWorldReady] = useState(false);
   const [worldError, setWorldError] = useState(false);
   const [selectedId, setSelectedId] = useState<LocationId | null>(null);
+  const [visitedIds, setVisitedIds] = useState<LocationId[]>([]);
   const [resetTrigger, setResetTrigger] = useState(0);
   const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>("night");
   const [ecoMode, setEcoMode] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [tourActive, setTourActive] = useState(false);
+  const [tourIndex, setTourIndex] = useState(0);
+
+  const selectDestination = useCallback(
+    (id: LocationId, isTour = false) => {
+      setSelectedId(id);
+      setVisitedIds((prev) => {
+        if (prev.includes(id)) {
+          if (isTour) {
+            playTourStep(soundEnabled);
+          } else {
+            playSelectChime(soundEnabled);
+          }
+          return prev;
+        }
+        const next = [...prev, id];
+        if (next.length === destinations.length) {
+          playDiscoveryComplete(soundEnabled);
+        } else if (isTour) {
+          playTourStep(soundEnabled);
+        } else {
+          playSelectChime(soundEnabled);
+        }
+        return next;
+      });
+    },
+    [soundEnabled]
+  );
 
   const handleReady = useCallback(() => setWorldReady(true), []);
   const handleError = useCallback(() => setWorldError(true), []);
-  const handleClosePanel = useCallback(() => setSelectedId(null), []);
+
+  const handleClosePanel = useCallback(() => {
+    setSelectedId(null);
+    setTourActive(false);
+    playPanelClose(soundEnabled);
+  }, [soundEnabled]);
+
   const handleEnter = useCallback(() => setView("world"), []);
   const handleClassic = useCallback(() => setView("classic"), []);
   const handleToggleTimeOfDay = useCallback(
@@ -47,10 +89,41 @@ export default function WorldExperience() {
     []
   );
   const handleToggleEcoMode = useCallback(() => setEcoMode((prev) => !prev), []);
+  const handleToggleSound = useCallback(() => {
+    setSoundEnabled((prev) => {
+      const next = !prev;
+      if (next) playSelectChime(true);
+      return next;
+    });
+  }, []);
+
+  const handleStartTour = useCallback(() => {
+    setTourActive(true);
+    setTourIndex(0);
+    selectDestination(destinations[0].id, true);
+  }, [selectDestination]);
+
+  const handleTourStep = useCallback(
+    (direction: -1 | 1) => {
+      setTourIndex((prev) => {
+        const next = (prev + direction + destinations.length) % destinations.length;
+        selectDestination(destinations[next].id, true);
+        return next;
+      });
+    },
+    [selectDestination]
+  );
+
+  const handleExitTour = useCallback(() => {
+    setTourActive(false);
+  }, []);
+
   const handleResetCamera = useCallback(() => {
     setSelectedId(null);
+    setTourActive(false);
     setResetTrigger((n) => n + 1);
-  }, []);
+    playPanelClose(soundEnabled);
+  }, [soundEnabled]);
 
   const canRenderWorld = webglSupported === true && !worldError;
   const showBoot = view === "boot" || (view === "world" && worldError);
@@ -66,7 +139,10 @@ export default function WorldExperience() {
               resetTrigger={resetTrigger}
               timeOfDay={timeOfDay}
               ecoMode={ecoMode}
-              onSelect={setSelectedId}
+              onSelect={(id) => {
+                setTourActive(false);
+                selectDestination(id);
+              }}
               onReady={handleReady}
             />
           </WorldErrorBoundary>
@@ -77,11 +153,22 @@ export default function WorldExperience() {
         <>
           <WorldHUD
             selectedId={selectedId}
+            visitedIds={visitedIds}
             timeOfDay={timeOfDay}
             ecoMode={ecoMode}
+            soundEnabled={soundEnabled}
+            tourActive={tourActive}
+            tourIndex={tourIndex}
             onToggleTimeOfDay={handleToggleTimeOfDay}
             onToggleEcoMode={handleToggleEcoMode}
-            onSelect={setSelectedId}
+            onToggleSound={handleToggleSound}
+            onStartTour={handleStartTour}
+            onTourStep={handleTourStep}
+            onExitTour={handleExitTour}
+            onSelect={(id) => {
+              setTourActive(false);
+              selectDestination(id);
+            }}
             onResetCamera={handleResetCamera}
             onClassicView={handleClassic}
           />

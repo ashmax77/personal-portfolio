@@ -7,6 +7,7 @@ import type { LocationId } from "@/types/portfolio";
 
 type WorldNavigationProps = {
   selectedId: LocationId | null;
+  visitedIds: LocationId[];
   onSelect: (id: LocationId) => void;
 };
 
@@ -19,7 +20,11 @@ const LOCATION_ICONS: Record<LocationId, typeof Building2> = {
   "communication-hub": Radio,
 };
 
-export default function WorldNavigation({ selectedId, onSelect }: WorldNavigationProps) {
+export default function WorldNavigation({
+  selectedId,
+  visitedIds,
+  onSelect,
+}: WorldNavigationProps) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
@@ -42,6 +47,7 @@ export default function WorldNavigation({ selectedId, onSelect }: WorldNavigatio
         {destinations.map((destination) => {
           const Icon = LOCATION_ICONS[destination.id];
           const isSelected = selectedId === destination.id;
+          const isVisited = visitedIds.includes(destination.id);
 
           return (
             <li key={destination.id}>
@@ -50,7 +56,7 @@ export default function WorldNavigation({ selectedId, onSelect }: WorldNavigatio
                 onClick={() => onSelect(destination.id)}
                 aria-pressed={isSelected}
                 title={`${destination.label} (Press ${destination.hotkey})`}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs transition-colors focus-visible:outline focus-visible:outline-cyan-400 sm:px-3 sm:text-sm ${
+                className={`relative inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-2 text-xs transition-colors focus-visible:outline focus-visible:outline-cyan-400 sm:px-3 sm:text-sm ${
                   isSelected
                     ? "border-emerald-400/70 bg-emerald-500/15 text-emerald-200"
                     : "border-sky-400/20 bg-slate-950/60 text-slate-200 hover:border-cyan-400/50 hover:text-cyan-100"
@@ -59,6 +65,13 @@ export default function WorldNavigation({ selectedId, onSelect }: WorldNavigatio
                 <Icon className="h-3.5 w-3.5 shrink-0 text-cyan-300" aria-hidden="true" />
                 <span className="hidden sm:inline">{destination.label}</span>
                 <span className="sm:hidden">{destination.shortCode}</span>
+                {isVisited && !isSelected && (
+                  <span
+                    className="h-1.5 w-1.5 rounded-full bg-emerald-400"
+                    title="Visited"
+                    aria-hidden="true"
+                  />
+                )}
                 <kbd className="hidden rounded border border-slate-700 bg-slate-900 px-1 font-mono text-[10px] text-slate-400 lg:inline">
                   {destination.hotkey}
                 </kbd>
