@@ -18,6 +18,7 @@ import WorldErrorBoundary from "@/components/world/WorldErrorBoundary";
 import { useWebGLSupport } from "@/hooks/useWebGLSupport";
 import { destinations } from "@/lib/destinations";
 import type { LocationId } from "@/types/portfolio";
+import type { TimeOfDay } from "@/components/world/WorldAtmosphere";
 
 const WorldCanvas = dynamic(() => import("@/components/world/WorldCanvas"), {
   ssr: false,
@@ -33,12 +34,17 @@ export default function WorldExperience() {
   const [worldError, setWorldError] = useState(false);
   const [selectedId, setSelectedId] = useState<LocationId | null>(null);
   const [resetTrigger, setResetTrigger] = useState(0);
+  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>("night");
 
   const handleReady = useCallback(() => setWorldReady(true), []);
   const handleError = useCallback(() => setWorldError(true), []);
   const handleClosePanel = useCallback(() => setSelectedId(null), []);
   const handleEnter = useCallback(() => setView("world"), []);
   const handleClassic = useCallback(() => setView("classic"), []);
+  const handleToggleTimeOfDay = useCallback(
+    () => setTimeOfDay((prev) => (prev === "night" ? "day" : "night")),
+    []
+  );
   const handleResetCamera = useCallback(() => {
     setSelectedId(null);
     setResetTrigger((n) => n + 1);
@@ -56,6 +62,7 @@ export default function WorldExperience() {
             <WorldCanvas
               selectedId={selectedId}
               resetTrigger={resetTrigger}
+              timeOfDay={timeOfDay}
               onSelect={setSelectedId}
               onReady={handleReady}
             />
@@ -67,6 +74,8 @@ export default function WorldExperience() {
         <>
           <WorldHUD
             selectedId={selectedId}
+            timeOfDay={timeOfDay}
+            onToggleTimeOfDay={handleToggleTimeOfDay}
             onSelect={setSelectedId}
             onResetCamera={handleResetCamera}
             onClassicView={handleClassic}

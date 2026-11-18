@@ -2,9 +2,12 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { AdaptiveDpr, AdaptiveEvents } from "@react-three/drei";
+import { AdaptiveDpr, AdaptiveEvents, ContactShadows } from "@react-three/drei";
+import { useReducedMotion } from "motion/react";
+import * as THREE from "three";
 import { OVERVIEW_CAMERA, destinations } from "@/lib/destinations";
 import type { LocationId } from "@/types/portfolio";
+import WorldAtmosphere, { type TimeOfDay } from "./WorldAtmosphere";
 import WorldCamera from "./WorldCamera";
 import WorldErrorBoundary from "./WorldErrorBoundary";
 import WorldLocations from "./WorldLocations";
@@ -13,6 +16,7 @@ import WorldModel, { MODEL_URL } from "./WorldModel";
 type WorldCanvasProps = {
   selectedId: LocationId | null;
   resetTrigger: number;
+  timeOfDay: TimeOfDay;
   onSelect: (id: LocationId) => void;
   onReady: () => void;
 };
@@ -123,11 +127,16 @@ function ProceduralCampus({
 export default function WorldCanvas({
   selectedId,
   resetTrigger,
+  timeOfDay,
   onSelect,
   onReady,
 }: WorldCanvasProps) {
+  const prefersReducedMotion = Boolean(useReducedMotion());
   const [hasCustomModel, setHasCustomModel] = useState(false);
   const cleanupContextListeners = useRef<(() => void) | null>(null);
+
+  const isNight = timeOfDay === "night";
+  const skyColor = isNight ? "#060A12" : "#0F2942";
 
   useEffect(() => {
     return () => {
@@ -154,8 +163,13 @@ export default function WorldCanvas({
       className="touch-none"
       camera={{ position: OVERVIEW_CAMERA.position, fov: 40, near: 0.1, far: 200 }}
       dpr={[1, 1.5]}
-      frameloop="demand"
-      gl={{ antialias: true, powerPreference: "high-performance" }}
+      frameloop={prefersReducedMotion ? "demand" : "always"}
+      gl={{
+        antialias: true,
+        powerPreference: "high-performance",
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: isNight ? 1.05 : 1.15,
+      }}
       onCreated={({ gl, invalidate }) => {
         const canvas = gl.domElement;
         const handleLost = (event: Event) => {
@@ -176,12 +190,21 @@ export default function WorldCanvas({
     >
       <AdaptiveDpr pixelated />
       <AdaptiveEvents />
-      <color attach="background" args={["#060A12"]} />
-      <fog attach="fog" args={["#060A12", 34, 72]} />
+      <color attach="background" args={[skyColor]} />
+      <fog attach="fog" args={[skyColor, 34, 82]} />
 
-      <ambientLight intensity={0.55} />
-      <hemisphereLight args={["#BAE6FD", "#1E293B", 0.55]} />
-      <directionalLight position={[10, 18, 8]} intensity={1.35} />
+      <ambientLight intensity={isNight ? 0.5 : 0.72} />
+      <hemisphereLight
+        args={[isNight ? "#BAE6FD" : "#E0F2FE", isNight ? "#1E293B" : "#334155", isNight ? 0.55 : 0.85]}
+      />
+      <directionalLight
+        position={isNight ? [10, 18, 8] : [16, 22, 12]}
+        intensity={isNight ? 1.25 : 1.75}
+        color={isNight ? "#E0F2FE" : "#FFFBEB"}
+      />
+
+      <WorldAtmosphere timeOfDay={timeOfDay} animate={!prefersReducedMotion} />
+      <ContactShadows position={[0, 0.015, 0]} opacity={0.35} scale={34} blur={2} far={6} frames={1} />
 
       {hasCustomModel ? (
         <WorldErrorBoundary onError={() => setHasCustomModel(false)}>

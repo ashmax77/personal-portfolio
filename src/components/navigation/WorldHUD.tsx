@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { CodeXml, Compass, ExternalLink, LayoutList, MousePointerClick, RotateCcw } from "lucide-react";
+import { CodeXml, Compass, ExternalLink, LayoutList, Moon, MousePointerClick, RotateCcw, Sun } from "lucide-react";
 import { profile } from "@/content/profile";
 import type { LocationId } from "@/types/portfolio";
+import type { TimeOfDay } from "@/components/world/WorldAtmosphere";
 import WorldNavigation from "./WorldNavigation";
 
 type WorldHUDProps = {
   selectedId: LocationId | null;
+  timeOfDay: TimeOfDay;
+  onToggleTimeOfDay: () => void;
   onSelect: (id: LocationId) => void;
   onResetCamera: () => void;
   onClassicView: () => void;
@@ -15,6 +18,8 @@ type WorldHUDProps = {
 
 export default function WorldHUD({
   selectedId,
+  timeOfDay,
+  onToggleTimeOfDay,
   onSelect,
   onResetCamera,
   onClassicView,
@@ -34,6 +39,21 @@ export default function WorldHUD({
         </div>
 
         <div className="pointer-events-auto flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={onToggleTimeOfDay}
+            title={timeOfDay === "night" ? "Switch to Day lighting" : "Switch to Night lighting"}
+            aria-label={timeOfDay === "night" ? "Switch to Day lighting" : "Switch to Night lighting"}
+            className="hud-panel inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-slate-200 transition-colors hover:text-cyan-200 focus-visible:outline focus-visible:outline-cyan-400 sm:text-sm"
+          >
+            {timeOfDay === "night" ? (
+              <Sun className="h-4 w-4 text-amber-300" aria-hidden="true" />
+            ) : (
+              <Moon className="h-4 w-4 text-cyan-300" aria-hidden="true" />
+            )}
+            <span className="hidden sm:inline">{timeOfDay === "night" ? "Day" : "Night"}</span>
+          </button>
+
           <Link
             href="/projects"
             className="hud-panel hidden items-center gap-1.5 rounded-lg px-3 py-2 text-xs text-slate-200 transition-colors hover:text-cyan-200 md:inline-flex"
