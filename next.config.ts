@@ -10,10 +10,7 @@ const nextConfig: NextConfig = {
         basePath,
         images: { unoptimized: true },
       }
-    : {
-        cacheComponents: true,
-        partialPrefetching: true,
-      }),
+    : {}),
   turbopack: {
     rules: {
       "*.css": {
