@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Html } from "@react-three/drei";
 import type { ThreeEvent } from "@react-three/fiber";
 import type { WorldDestination } from "@/types/portfolio";
+import LandmarkLabel from "./LandmarkLabel";
 
 type DeveloperHQProps = {
   destination: WorldDestination;
@@ -107,19 +107,13 @@ export default function DeveloperHQ({ destination, selected, onSelect }: Develop
         </mesh>
       </group>
 
-      {/* Floating HTML label (decorative; panel & HUD carry the accessible content) */}
-      <Html position={[0, 5.4, 0]} center distanceFactor={14} zIndexRange={[10, 0]}>
-        <div
-          aria-hidden="true"
-          className={`pointer-events-none select-none whitespace-nowrap rounded border px-2.5 py-1 font-mono text-[11px] tracking-[0.18em] transition-colors ${
-            active
-              ? "border-cyan-300/70 bg-slate-950/90 text-cyan-200"
-              : "border-sky-400/30 bg-slate-950/70 text-slate-300"
-          }`}
-        >
-          {destination.shortCode} · {destination.label.toUpperCase()}
-        </div>
-      </Html>
+      {/* Floating 3D sprite label (decorative; panel & HUD carry accessible content) */}
+      <LandmarkLabel
+        position={[0, 5.4, 0]}
+        text={`${destination.shortCode} · ${destination.label.toUpperCase()}`}
+        active={active}
+        accentColor={accent}
+      />
     </group>
   );
 }

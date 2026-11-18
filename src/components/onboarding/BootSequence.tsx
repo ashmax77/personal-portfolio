@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useReducedMotion } from "motion/react";
 import { AlertTriangle, LayoutList, Play, SkipForward } from "lucide-react";
 
@@ -24,6 +24,8 @@ type BootSequenceProps = {
   onClassicView: () => void;
 };
 
+const emptySubscribe = () => () => {};
+
 export default function BootSequence({
   worldReady,
   webglSupported,
@@ -32,6 +34,11 @@ export default function BootSequence({
   onClassicView,
 }: BootSequenceProps) {
   const prefersReducedMotion = useReducedMotion();
+  const hydrated = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
   const [animatedCount, setAnimatedCount] = useState(0);
   const enterButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -51,7 +58,7 @@ export default function BootSequence({
     return () => window.clearInterval(intervalId);
   }, [prefersReducedMotion]);
 
-  const visibleCount = prefersReducedMotion ? BOOT_LINES.length : animatedCount;
+  const visibleCount = hydrated && prefersReducedMotion ? BOOT_LINES.length : animatedCount;
   const linesComplete = visibleCount >= BOOT_LINES.length;
   const hasFailure = webglSupported === false || worldError;
   const systemReady = linesComplete && worldReady && !hasFailure;
