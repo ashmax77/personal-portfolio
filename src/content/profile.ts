@@ -1,24 +1,20 @@
 import type { ProfileData } from "@/types/portfolio";
 
 /**
- * Profile content used by the Developer HQ panel.
- *
- * TODO(Phase 3): Replace placeholder values with verified personal details
- * (role, bio, location, email, LinkedIn, CV). Phase 3 also adds the remaining
- * typed content files (projects, skills, education, experience, achievements).
+ * Profile content used across Developer HQ, Classic View, and /about.
  */
 export const profile: ProfileData = {
   name: "Ashen Imalsha",
   handle: "ashmax77",
-  role: "Software Developer",
+  role: "Full-Stack Software Engineer",
   tagline: "Building software that feels engineered — and explorable.",
   bio: [
-    "Welcome to Developer HQ, the command center of Ashen's World.",
-    "This placeholder introduction will be replaced with a verified professional summary in Phase 3, when all portfolio content moves into typed content files.",
+    "I design and build full-stack web applications, RESTful backend services, and lightweight interactive 3D experiences with TypeScript, Next.js, Spring Boot, and PostgreSQL.",
+    "Across team leadership and independent builds, I focus on clean system architecture, clear API contracts, and interfaces that remain fast and accessible on every device.",
   ],
-  location: "TBD",
-  availability: "Open to opportunities",
-  interests: ["Full-stack development", "3D on the web", "Game engines"],
+  location: "Sri Lanka",
+  availability: "Open to Software Engineering Opportunities",
+  interests: ["Full-Stack Architecture", "Interactive 3D Web", "Developer Tooling", "Game-Engine UI"],
   resumeUrl: "/resume.pdf",
   email: "",
   socials: {
