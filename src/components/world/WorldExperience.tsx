@@ -7,7 +7,7 @@ import { Building2, LayoutList, Loader2, MousePointerClick } from "lucide-react"
 import BootSequence from "@/components/onboarding/BootSequence";
 import InformationPanel from "@/components/panels/InformationPanel";
 import AboutPanelContent from "@/components/panels/AboutPanelContent";
-import ClassicPreview from "@/components/common/ClassicPreview";
+import ClassicPortfolioView from "@/components/common/ClassicPortfolioView";
 import WorldErrorBoundary from "@/components/world/WorldErrorBoundary";
 import { useWebGLSupport } from "@/hooks/useWebGLSupport";
 import { destinations } from "@/lib/destinations";
@@ -148,7 +148,7 @@ export default function WorldExperience() {
       {/* Classic (non-3D) view overlay — keeps the world mounted for instant return */}
       {view === "classic" && (
         <div className="absolute inset-0 z-[60] overflow-y-auto">
-          <ClassicPreview
+          <ClassicPortfolioView
             onReturnToWorld={canRenderWorld ? () => setView(worldReady ? "world" : "boot") : undefined}
           />
         </div>
