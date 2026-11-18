@@ -179,13 +179,15 @@ function DriftingClouds({ timeOfDay, animate }: WorldAtmosphereProps) {
   const cloudsRef = useRef<THREE.Group>(null);
   const cloudColor = timeOfDay === "night" ? "#1E293B" : "#F1F5F9";
 
-  useFrame((_, delta) => {
+  useFrame(({ clock }, delta) => {
     if (!animate || !cloudsRef.current) return;
     const step = Math.min(delta, 0.05) * 0.45;
-    for (const child of cloudsRef.current.children) {
+    const t = clock.getElapsedTime();
+    cloudsRef.current.children.forEach((child, idx) => {
       child.position.x += step;
+      child.position.y += Math.sin(t * 0.6 + idx * 1.5) * 0.0025;
       if (child.position.x > 26) child.position.x = -26;
-    }
+    });
   });
 
   const clouds: Array<{ pos: [number, number, number]; scale: number }> = [
@@ -216,27 +218,53 @@ function DriftingClouds({ timeOfDay, animate }: WorldAtmosphereProps) {
   );
 }
 
+const DRONE_WAYPOINTS: Array<[number, number, number]> = destinations.map((d) => [
+  d.coordinates[0] + (d.id === "developer-hq" ? 2.4 : 0),
+  4.8,
+  d.coordinates[2] + (d.id === "developer-hq" ? 2.4 : 0),
+]);
+
 function CampusDrone({ animate }: { animate: boolean }) {
   const droneRef = useRef<THREE.Group>(null);
   const rotorsRef = useRef<THREE.Group>(null);
+  const waypointIndexRef = useRef(0);
+  const dwellTimerRef = useRef(0);
+  const targetVec = useMemo(() => new THREE.Vector3(...DRONE_WAYPOINTS[0]), []);
+  const directionVec = useMemo(() => new THREE.Vector3(), []);
   const [glbFailed, setGlbFailed] = useState(false);
   const droneSpec = CREATURE_MODELS.drone;
   const useCustomDrone = Boolean(droneSpec) && !glbFailed;
 
   useFrame(({ clock }, delta) => {
     if (!animate) return;
+    const dt = Math.min(delta, 0.05);
+
     if (droneRef.current) {
-      const t = clock.getElapsedTime() * 0.42;
-      const radius = 5.4;
-      droneRef.current.position.set(
-        Math.cos(t) * radius,
-        3.9 + Math.sin(t * 2.5) * 0.25,
-        Math.sin(t) * radius
-      );
-      droneRef.current.rotation.y = -t;
+      dwellTimerRef.current += dt;
+      if (dwellTimerRef.current > 4.6) {
+        dwellTimerRef.current = 0;
+        waypointIndexRef.current = (waypointIndexRef.current + 1) % DRONE_WAYPOINTS.length;
+        targetVec.set(...DRONE_WAYPOINTS[waypointIndexRef.current]);
+      }
+
+      const hoverY = targetVec.y + Math.sin(clock.getElapsedTime() * 2.4) * 0.24;
+      directionVec.set(targetVec.x, hoverY, targetVec.z);
+
+      const moveAlpha = 1 - Math.exp(-1.4 * dt);
+      droneRef.current.position.lerp(directionVec, moveAlpha);
+
+      const dx = targetVec.x - droneRef.current.position.x;
+      const dz = targetVec.z - droneRef.current.position.z;
+      if (dx * dx + dz * dz > 0.05) {
+        const desiredYaw = Math.atan2(dx, dz);
+        const currentYaw = droneRef.current.rotation.y;
+        const diff = Math.atan2(Math.sin(desiredYaw - currentYaw), Math.cos(desiredYaw - currentYaw));
+        droneRef.current.rotation.y += diff * (1 - Math.exp(-3.5 * dt));
+      }
     }
+
     if (!useCustomDrone && rotorsRef.current) {
-      const spin = Math.min(delta, 0.05) * 18;
+      const spin = dt * 18;
       for (const rotor of rotorsRef.current.children) {
         rotor.rotation.y += spin;
       }
@@ -301,24 +329,56 @@ function FlockingBirds({ timeOfDay, animate }: WorldAtmosphereProps) {
   const birdSpec = CREATURE_MODELS.bird;
   const useCustomBird = Boolean(birdSpec) && !glbFailed;
 
-  useFrame(({ clock }) => {
+  const birdStateRef = useRef(
+    [0, 1, 2, 3].map((idx) => ({
+      target: new THREE.Vector3(
+        (seededValue(idx * 7 + 1) - 0.5) * 24,
+        6.8 + seededValue(idx * 7 + 2) * 3.0,
+        (seededValue(idx * 7 + 3) - 0.5) * 24
+      ),
+      timer: idx * 1.1,
+      step: idx + 1,
+    }))
+  );
+
+  useFrame(({ clock }, delta) => {
     if (!animate || !flockRef.current) return;
     const t = clock.getElapsedTime();
+    const dt = Math.min(delta, 0.05);
+
     flockRef.current.children.forEach((bird, idx) => {
-      const speed = 0.28 + idx * 0.04;
-      const angle = t * speed + idx * 1.7;
-      const radius = 10 + (idx % 2) * 3.5;
-      bird.position.set(
-        Math.cos(angle) * radius,
-        7.4 + Math.sin(t * 1.4 + idx) * 0.6,
-        Math.sin(angle) * radius
-      );
-      bird.rotation.y = -angle;
+      const state = birdStateRef.current[idx];
+      if (!state) return;
+
+      state.timer += dt;
+      if (state.timer > 4.2 + idx * 0.45) {
+        state.timer = 0;
+        state.step += 1;
+        const seed = state.step * 17 + idx * 31;
+        state.target.set(
+          (seededValue(seed + 1) - 0.5) * 26,
+          6.4 + seededValue(seed + 2) * 3.4,
+          (seededValue(seed + 3) - 0.5) * 26
+        );
+      }
+
+      const glideAlpha = 1 - Math.exp(-(0.75 + idx * 0.08) * dt);
+      bird.position.lerp(state.target, glideAlpha);
+      bird.position.y += Math.sin(t * 2.2 + idx) * 0.008;
+
+      const dx = state.target.x - bird.position.x;
+      const dz = state.target.z - bird.position.z;
+      if (dx * dx + dz * dz > 0.08) {
+        const desiredYaw = Math.atan2(dx, dz);
+        const currentYaw = bird.rotation.y;
+        const diff = Math.atan2(Math.sin(desiredYaw - currentYaw), Math.cos(desiredYaw - currentYaw));
+        bird.rotation.y += diff * (1 - Math.exp(-3.0 * dt));
+      }
 
       if (!useCustomBird) {
         const leftWing = bird.children[1];
         const rightWing = bird.children[2];
-        const flap = Math.sin(t * 7 + idx * 2) * 0.55;
+        const flap = Math.sin(t * 7.5 + idx * 2) * 0.55;
         if (leftWing) leftWing.rotation.z = flap;
         if (rightWing) rightWing.rotation.z = -flap;
       }
