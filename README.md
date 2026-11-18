@@ -42,7 +42,7 @@ The finished application follows a three-stage experience while keeping all port
 This project is being built incrementally in **7 verified phases**. Detailed per-feature tracking lives in [`PROGRESS.md`](./PROGRESS.md).
 
 ### Completed So Far — Phase 1: Project Scaffolding & Dependency Foundation
-- Scaffolded the Next.js App Router application inside `ashens-world/` with TypeScript, ESLint, Tailwind CSS v4, `src/` directory, and `@/*` import alias.
+- Scaffolded the Next.js App Router application at the repository root with TypeScript, ESLint, Tailwind CSS v4, `src/` directory, and `@/*` import alias.
 - Installed and verified compatible 3D and UI runtime packages (`three`, `@types/three`, `@react-three/fiber`, `@react-three/drei`, `motion`, `lucide-react`, `clsx`, `tailwind-merge`).
 - Created the modular directory architecture (`src/components/{onboarding,world,navigation,panels,projects,common}`, `src/content`, `src/hooks`, `src/lib`, `src/types`, `src/styles`, `public/{models,textures,images/projects,icons}`).
 - Defined shared TypeScript contracts in [`src/types/portfolio.ts`](./src/types/portfolio.ts) (`LocationId`, `ActiveSection`, `ViewMode`, `WorldDestination`, `ProfileData`, `Project`, `SkillCategory`, `EducationItem`, `ExperienceItem`, `AchievementItem`) and class-merging helper [`src/lib/cn.ts`](./src/lib/cn.ts).
@@ -62,7 +62,7 @@ This project is being built incrementally in **7 verified phases**. Detailed per
 ## Project Structure
 
 ```text
-ashens-world/
+personal-portfolio/ (Ashen's World)
 ├── public/
 │   ├── models/              # Exported & optimized .glb world models
 │   ├── textures/
@@ -96,7 +96,7 @@ ashens-world/
 
 ## Local Development
 
-Run commands from inside the `ashens-world/` directory:
+Run commands from the repository root:
 
 ```bash
 # Start development server
