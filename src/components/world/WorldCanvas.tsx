@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useRef, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { AdaptiveDpr, AdaptiveEvents, ContactShadows } from "@react-three/drei";
+import { AdaptiveDpr, AdaptiveEvents, ContactShadows, Environment, Lightformer } from "@react-three/drei";
 import { useReducedMotion } from "motion/react";
 import * as THREE from "three";
 import { OVERVIEW_CAMERA, destinations } from "@/lib/destinations";
@@ -46,19 +46,33 @@ const ROCKS: Array<[number, number, number]> = [
 function Island() {
   return (
     <group>
-      <mesh position={[0, -0.25, 0]}>
-        <cylinderGeometry args={[16, 16, 0.5, 12]} />
-        <meshStandardMaterial color="#3F7D4E" flatShading />
+      {/* Coastal stone/sand shoreline ring */}
+      <mesh position={[0, -0.45, 0]}>
+        <cylinderGeometry args={[16.8, 17.2, 0.45, 16]} />
+        <meshStandardMaterial color="#94A3B8" roughness={0.9} flatShading />
       </mesh>
-      <mesh position={[0, -2.0, 0]}>
-        <cylinderGeometry args={[16, 10, 3.0, 12]} />
-        <meshStandardMaterial color="#4B3F36" flatShading />
+      {/* Main grass plateau */}
+      <mesh position={[0, -0.18, 0]}>
+        <cylinderGeometry args={[16.0, 16.3, 0.42, 16]} />
+        <meshStandardMaterial color="#2E6F40" roughness={0.88} flatShading />
       </mesh>
-      <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[3.2, 24]} />
-        <meshStandardMaterial color="#475569" />
+      {/* Inner terraced lawn */}
+      <mesh position={[0, 0.01, 0]}>
+        <cylinderGeometry args={[11.2, 11.6, 0.08, 16]} />
+        <meshStandardMaterial color="#37804C" roughness={0.85} flatShading />
+      </mesh>
+      {/* Rock underside */}
+      <mesh position={[0, -2.1, 0]}>
+        <cylinderGeometry args={[16.5, 9.5, 3.1, 16]} />
+        <meshStandardMaterial color="#3F352E" roughness={0.95} flatShading />
+      </mesh>
+      {/* Central plaza disc */}
+      <mesh position={[0, 0.055, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[3.4, 24]} />
+        <meshStandardMaterial color="#334155" metalness={0.3} roughness={0.6} />
       </mesh>
 
+      {/* Walkways radiating from Developer HQ */}
       {destinations
         .filter((d) => d.id !== "developer-hq")
         .map((dest) => {
@@ -68,11 +82,11 @@ function Island() {
           return (
             <mesh
               key={dest.id}
-              position={[x / 2, 0.008, z / 2]}
+              position={[x / 2, 0.052, z / 2]}
               rotation={[-Math.PI / 2, 0, angle]}
             >
-              <planeGeometry args={[1.1, length]} />
-              <meshStandardMaterial color="#475569" />
+              <planeGeometry args={[1.15, length]} />
+              <meshStandardMaterial color="#475569" roughness={0.7} />
             </mesh>
           );
         })}
@@ -83,13 +97,21 @@ function Island() {
 function Tree({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
-      <mesh position={[0, 0.35, 0]}>
-        <cylinderGeometry args={[0.12, 0.16, 0.7, 6]} />
-        <meshStandardMaterial color="#6B4F3A" flatShading />
+      <mesh position={[0, 0.38, 0]}>
+        <cylinderGeometry args={[0.1, 0.16, 0.76, 6]} />
+        <meshStandardMaterial color="#5C4033" roughness={0.9} flatShading />
       </mesh>
-      <mesh position={[0, 1.2, 0]}>
-        <coneGeometry args={[0.65, 1.4, 6]} />
-        <meshStandardMaterial color="#2F855A" flatShading />
+      <mesh position={[0, 1.0, 0]}>
+        <coneGeometry args={[0.72, 1.0, 7]} />
+        <meshStandardMaterial color="#1E5631" roughness={0.82} flatShading />
+      </mesh>
+      <mesh position={[0, 1.48, 0]}>
+        <coneGeometry args={[0.56, 0.9, 7]} />
+        <meshStandardMaterial color="#2A7243" roughness={0.82} flatShading />
+      </mesh>
+      <mesh position={[0, 1.9, 0]}>
+        <coneGeometry args={[0.38, 0.75, 7]} />
+        <meshStandardMaterial color="#388E54" roughness={0.8} flatShading />
       </mesh>
     </group>
   );
@@ -97,10 +119,16 @@ function Tree({ position }: { position: [number, number, number] }) {
 
 function Rock({ position }: { position: [number, number, number] }) {
   return (
-    <mesh position={[position[0], 0.2, position[2]]}>
-      <dodecahedronGeometry args={[0.42, 0]} />
-      <meshStandardMaterial color="#6B7280" flatShading />
-    </mesh>
+    <group position={position}>
+      <mesh position={[0, 0.22, 0]}>
+        <dodecahedronGeometry args={[0.42, 0]} />
+        <meshStandardMaterial color="#64748B" roughness={0.9} flatShading />
+      </mesh>
+      <mesh position={[0.34, 0.12, 0.16]} scale={0.62}>
+        <dodecahedronGeometry args={[0.38, 0]} />
+        <meshStandardMaterial color="#475569" roughness={0.9} flatShading />
+      </mesh>
+    </group>
   );
 }
 
@@ -197,6 +225,24 @@ export default function WorldCanvas({
       <AdaptiveEvents />
       <color attach="background" args={[skyColor]} />
       <fog attach="fog" args={[skyColor, 34, 82]} />
+
+      <Environment resolution={128}>
+        <Lightformer
+          form="ring"
+          intensity={isNight ? 1.2 : 1.8}
+          color={isNight ? "#38BDF8" : "#FEF3C7"}
+          position={[0, 12, 0]}
+          rotation={[Math.PI / 2, 0, 0]}
+          scale={18}
+        />
+        <Lightformer
+          form="rect"
+          intensity={isNight ? 0.8 : 1.4}
+          color="#BAE6FD"
+          position={[-14, 6, -10]}
+          scale={[10, 4, 1]}
+        />
+      </Environment>
 
       <ambientLight intensity={isNight ? 0.5 : 0.72} />
       <hemisphereLight

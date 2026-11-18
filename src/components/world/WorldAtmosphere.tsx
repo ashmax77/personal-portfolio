@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useFrame } from "@react-three/fiber";
 import { Stars } from "@react-three/drei";
 import * as THREE from "three";
 import { destinations } from "@/lib/destinations";
+import { CREATURE_MODELS } from "@/lib/modelManifest";
+import CustomGLBAsset from "./CustomGLBAsset";
+import WorldErrorBoundary from "./WorldErrorBoundary";
 
 export type TimeOfDay = "night" | "day";
 
@@ -215,29 +218,145 @@ function DriftingClouds({ timeOfDay, animate }: WorldAtmosphereProps) {
 
 function CampusDrone({ animate }: { animate: boolean }) {
   const droneRef = useRef<THREE.Group>(null);
+  const rotorsRef = useRef<THREE.Group>(null);
+  const [glbFailed, setGlbFailed] = useState(false);
+  const droneSpec = CREATURE_MODELS.drone;
+  const useCustomDrone = Boolean(droneSpec) && !glbFailed;
 
-  useFrame(({ clock }) => {
-    if (!animate || !droneRef.current) return;
-    const t = clock.getElapsedTime() * 0.42;
-    const radius = 5.4;
-    droneRef.current.position.set(
-      Math.cos(t) * radius,
-      3.8 + Math.sin(t * 2.5) * 0.28,
-      Math.sin(t) * radius
-    );
-    droneRef.current.rotation.y = -t;
+  useFrame(({ clock }, delta) => {
+    if (!animate) return;
+    if (droneRef.current) {
+      const t = clock.getElapsedTime() * 0.42;
+      const radius = 5.4;
+      droneRef.current.position.set(
+        Math.cos(t) * radius,
+        3.9 + Math.sin(t * 2.5) * 0.25,
+        Math.sin(t) * radius
+      );
+      droneRef.current.rotation.y = -t;
+    }
+    if (!useCustomDrone && rotorsRef.current) {
+      const spin = Math.min(delta, 0.05) * 18;
+      for (const rotor of rotorsRef.current.children) {
+        rotor.rotation.y += spin;
+      }
+    }
   });
 
-  return (
-    <group ref={droneRef} position={[5.4, 3.8, 0]}>
+  const armOffsets: Array<[number, number, number]> = [
+    [0.24, 0.04, 0.24],
+    [-0.24, 0.04, 0.24],
+    [0.24, 0.04, -0.24],
+    [-0.24, 0.04, -0.24],
+  ];
+
+  const proceduralDrone = (
+    <>
       <mesh>
-        <octahedronGeometry args={[0.24, 0]} />
-        <meshStandardMaterial color="#334155" flatShading />
+        <boxGeometry args={[0.28, 0.12, 0.34]} />
+        <meshStandardMaterial color="#334155" metalness={0.7} roughness={0.25} />
       </mesh>
-      <mesh position={[0, -0.12, 0]}>
-        <sphereGeometry args={[0.1, 8, 8]} />
+      <mesh rotation={[0, Math.PI / 4, 0]}>
+        <boxGeometry args={[0.68, 0.04, 0.06]} />
+        <meshStandardMaterial color="#475569" metalness={0.6} roughness={0.35} />
+      </mesh>
+      <mesh rotation={[0, -Math.PI / 4, 0]}>
+        <boxGeometry args={[0.68, 0.04, 0.06]} />
+        <meshStandardMaterial color="#475569" metalness={0.6} roughness={0.35} />
+      </mesh>
+      <group ref={rotorsRef}>
+        {armOffsets.map((pos, i) => (
+          <mesh key={i} position={pos}>
+            <boxGeometry args={[0.24, 0.015, 0.04]} />
+            <meshStandardMaterial color="#38BDF8" emissive="#38BDF8" emissiveIntensity={0.8} />
+          </mesh>
+        ))}
+      </group>
+      <mesh position={[0, -0.09, 0]}>
+        <sphereGeometry args={[0.08, 8, 8]} />
         <meshStandardMaterial color="#10B981" emissive="#10B981" emissiveIntensity={1.6} />
       </mesh>
+    </>
+  );
+
+  return (
+    <group ref={droneRef} position={[5.4, 3.9, 0]}>
+      {useCustomDrone && droneSpec ? (
+        <WorldErrorBoundary onError={() => setGlbFailed(true)}>
+          <Suspense fallback={proceduralDrone}>
+            <CustomGLBAsset spec={droneSpec} animate={animate} />
+          </Suspense>
+        </WorldErrorBoundary>
+      ) : (
+        proceduralDrone
+      )}
+    </group>
+  );
+}
+
+function FlockingBirds({ timeOfDay, animate }: WorldAtmosphereProps) {
+  const flockRef = useRef<THREE.Group>(null);
+  const [glbFailed, setGlbFailed] = useState(false);
+  const birdColor = timeOfDay === "night" ? "#94A3B8" : "#F8FAFC";
+  const birdSpec = CREATURE_MODELS.bird;
+  const useCustomBird = Boolean(birdSpec) && !glbFailed;
+
+  useFrame(({ clock }) => {
+    if (!animate || !flockRef.current) return;
+    const t = clock.getElapsedTime();
+    flockRef.current.children.forEach((bird, idx) => {
+      const speed = 0.28 + idx * 0.04;
+      const angle = t * speed + idx * 1.7;
+      const radius = 10 + (idx % 2) * 3.5;
+      bird.position.set(
+        Math.cos(angle) * radius,
+        7.4 + Math.sin(t * 1.4 + idx) * 0.6,
+        Math.sin(angle) * radius
+      );
+      bird.rotation.y = -angle;
+
+      if (!useCustomBird) {
+        const leftWing = bird.children[1];
+        const rightWing = bird.children[2];
+        const flap = Math.sin(t * 7 + idx * 2) * 0.55;
+        if (leftWing) leftWing.rotation.z = flap;
+        if (rightWing) rightWing.rotation.z = -flap;
+      }
+    });
+  });
+
+  const renderProceduralBird = () => (
+    <>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[0.08, 0.36, 5]} />
+        <meshStandardMaterial color={birdColor} flatShading />
+      </mesh>
+      <mesh position={[-0.18, 0, 0]} rotation={[0, 0, 0.2]}>
+        <boxGeometry args={[0.32, 0.025, 0.14]} />
+        <meshStandardMaterial color={birdColor} flatShading />
+      </mesh>
+      <mesh position={[0.18, 0, 0]} rotation={[0, 0, -0.2]}>
+        <boxGeometry args={[0.32, 0.025, 0.14]} />
+        <meshStandardMaterial color={birdColor} flatShading />
+      </mesh>
+    </>
+  );
+
+  return (
+    <group ref={flockRef}>
+      {[0, 1, 2, 3].map((idx) => (
+        <group key={idx} position={[10, 7.5, 0]}>
+          {useCustomBird && birdSpec ? (
+            <WorldErrorBoundary onError={() => setGlbFailed(true)}>
+              <Suspense fallback={renderProceduralBird()}>
+                <CustomGLBAsset spec={birdSpec} animate={animate} />
+              </Suspense>
+            </WorldErrorBoundary>
+          ) : (
+            renderProceduralBird()
+          )}
+        </group>
+      ))}
     </group>
   );
 }
@@ -253,6 +372,7 @@ export default function WorldAtmosphere({ timeOfDay, animate }: WorldAtmosphereP
       <WalkwayLamps timeOfDay={timeOfDay} />
       <DriftingClouds timeOfDay={timeOfDay} animate={animate} />
       <CampusDrone animate={animate} />
+      <FlockingBirds timeOfDay={timeOfDay} animate={animate} />
     </>
   );
 }
