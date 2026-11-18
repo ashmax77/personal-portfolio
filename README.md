@@ -103,3 +103,10 @@ npm run build
 # Serve production build locally
 npm run start
 ```
+
+---
+
+## CI/CD & Deployment
+
+- **Continuous Integration ([`.github/workflows/ci.yml`](./.github/workflows/ci.yml)):** Automatically runs `npm ci`, `npm run lint`, `npx tsc --noEmit`, and `npm run build` on every push and pull request to `main`.
+- **Continuous Deployment ([`vercel.json`](./vercel.json)):** Connect this repository to [Vercel](https://vercel.com) for automatic preview deployments on pull requests and production deployments on every merge/push to `main`.
