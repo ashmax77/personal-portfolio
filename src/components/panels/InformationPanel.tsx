@@ -49,9 +49,9 @@ export default function InformationPanel({
   const slide = prefersReducedMotion
     ? { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 } }
     : {
-        initial: { opacity: 0, x: 48 },
-        animate: { opacity: 1, x: 0 },
-        exit: { opacity: 0, x: 48 },
+        initial: { opacity: 0, y: 24 },
+        animate: { opacity: 1, y: 0 },
+        exit: { opacity: 0, y: 24 },
       };
 
   return (
@@ -74,10 +74,13 @@ export default function InformationPanel({
             role="dialog"
             aria-modal="true"
             aria-labelledby={titleId}
-            className="hud-panel-strong absolute inset-x-3 bottom-3 top-auto z-40 flex max-h-[75vh] flex-col rounded-xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-6 sm:max-h-none sm:w-[420px]"
-            transition={{ duration: prefersReducedMotion ? 0.1 : 0.28, ease: "easeOut" }}
+            className="hud-panel-strong absolute inset-x-2 bottom-2 top-auto z-40 flex max-h-[80dvh] flex-col rounded-xl sm:inset-x-auto sm:bottom-6 sm:right-6 sm:top-6 sm:max-h-none sm:w-[420px]"
+            transition={{ duration: prefersReducedMotion ? 0.1 : 0.26, ease: "easeOut" }}
             {...slide}
           >
+            <div className="flex justify-center pt-2 sm:hidden" aria-hidden="true">
+              <span className="h-1 w-10 rounded-full bg-slate-600" />
+            </div>
             <header className="flex items-start justify-between gap-4 border-b border-sky-400/20 px-5 py-4">
               <div>
                 <p className="font-mono text-[11px] tracking-[0.2em] text-cyan-400">{eyebrow}</p>

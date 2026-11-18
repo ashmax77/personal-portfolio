@@ -67,6 +67,11 @@ function InteractiveLandmark({
         onPointerOut={handlePointerOut}
         onClick={handleClick}
       >
+        {/* Invisible generous hitbox for mobile touch accuracy */}
+        <mesh position={[0, 1.8, 0]}>
+          <cylinderGeometry args={[2.3, 2.3, 3.6, 12]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
+        </mesh>
         {children(active)}
       </group>
 

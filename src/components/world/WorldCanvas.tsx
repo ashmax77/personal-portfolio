@@ -143,6 +143,7 @@ export default function WorldCanvas({
 
   return (
     <Canvas
+      className="touch-none"
       camera={{ position: OVERVIEW_CAMERA.position, fov: 40, near: 0.1, far: 200 }}
       dpr={[1, 1.5]}
       frameloop="demand"
