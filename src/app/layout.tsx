@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { Analytics } from "@vercel/analytics/next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { profile } from "@/content/profile";
 import { SITE_URL } from "@/lib/site";
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: Readonly<{ children: ReactNode 
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
         {children}
+        {process.env.GITHUB_PAGES !== "true" && <Analytics />}
       </body>
     </html>
   );
