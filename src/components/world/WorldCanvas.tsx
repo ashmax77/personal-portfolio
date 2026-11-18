@@ -1,10 +1,13 @@
 "use client";
 
+import { Suspense, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OVERVIEW_CAMERA, destinations } from "@/lib/destinations";
 import type { LocationId } from "@/types/portfolio";
 import WorldCamera from "./WorldCamera";
+import WorldErrorBoundary from "./WorldErrorBoundary";
 import WorldLocations from "./WorldLocations";
+import WorldModel, { MODEL_URL } from "./WorldModel";
 
 type WorldCanvasProps = {
   selectedId: LocationId | null;
@@ -37,23 +40,19 @@ const ROCKS: Array<[number, number, number]> = [
 function Island() {
   return (
     <group>
-      {/* Grass top */}
       <mesh position={[0, -0.25, 0]}>
         <cylinderGeometry args={[16, 16, 0.5, 12]} />
         <meshStandardMaterial color="#3F7D4E" flatShading />
       </mesh>
-      {/* Rock underside */}
       <mesh position={[0, -2.0, 0]}>
         <cylinderGeometry args={[16, 10, 3.0, 12]} />
         <meshStandardMaterial color="#4B3F36" flatShading />
       </mesh>
-      {/* Central plaza disc */}
       <mesh position={[0, 0.01, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[3.2, 24]} />
         <meshStandardMaterial color="#475569" />
       </mesh>
 
-      {/* Walkways radiating from Developer HQ to each destination */}
       {destinations
         .filter((d) => d.id !== "developer-hq")
         .map((dest) => {
@@ -99,12 +98,49 @@ function Rock({ position }: { position: [number, number, number] }) {
   );
 }
 
+function ProceduralCampus({
+  selectedId,
+  onSelect,
+}: {
+  selectedId: LocationId | null;
+  onSelect: (id: LocationId) => void;
+}) {
+  return (
+    <>
+      <Island />
+      {TREES.map((position) => (
+        <Tree key={position.join(",")} position={position} />
+      ))}
+      {ROCKS.map((position) => (
+        <Rock key={position.join(",")} position={position} />
+      ))}
+      <WorldLocations selectedId={selectedId} onSelect={onSelect} />
+    </>
+  );
+}
+
 export default function WorldCanvas({
   selectedId,
   resetTrigger,
   onSelect,
   onReady,
 }: WorldCanvasProps) {
+  const [hasCustomModel, setHasCustomModel] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    fetch(MODEL_URL, { method: "HEAD" })
+      .then((res) => {
+        if (active && res.ok) setHasCustomModel(true);
+      })
+      .catch(() => {
+        // Keep procedural campus fallback when no GLB is present.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <Canvas
       camera={{ position: OVERVIEW_CAMERA.position, fov: 40, near: 0.1, far: 200 }}
@@ -122,15 +158,16 @@ export default function WorldCanvas({
       <hemisphereLight args={["#BAE6FD", "#1E293B", 0.55]} />
       <directionalLight position={[10, 18, 8]} intensity={1.35} />
 
-      <Island />
-      {TREES.map((position) => (
-        <Tree key={position.join(",")} position={position} />
-      ))}
-      {ROCKS.map((position) => (
-        <Rock key={position.join(",")} position={position} />
-      ))}
+      {hasCustomModel ? (
+        <WorldErrorBoundary onError={() => setHasCustomModel(false)}>
+          <Suspense fallback={<ProceduralCampus selectedId={selectedId} onSelect={onSelect} />}>
+            <WorldModel onSelect={onSelect} />
+          </Suspense>
+        </WorldErrorBoundary>
+      ) : (
+        <ProceduralCampus selectedId={selectedId} onSelect={onSelect} />
+      )}
 
-      <WorldLocations selectedId={selectedId} onSelect={onSelect} />
       <WorldCamera selectedId={selectedId} resetTrigger={resetTrigger} />
     </Canvas>
   );
