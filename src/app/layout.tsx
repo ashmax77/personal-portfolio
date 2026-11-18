@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { profile } from "@/content/profile";
 import { SITE_URL } from "@/lib/site";
@@ -48,7 +49,7 @@ const personJsonLd = {
   sameAs: [profile.socials.github, profile.socials.linkedin].filter(Boolean),
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
     <html
       lang="en"
