@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "model:inspect": "gltf-transform inspect public/models/world.glb",
+    "model:optimize": "gltf-transform optimize public/models/world.glb public/models/world.optimized.glb --texture-compress webp"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
@@ -22,6 +24,7 @@
     "three": "^0.187.0"
   },
   "devDependencies": {
+    "@gltf-transform/cli": "^4.5.1",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
